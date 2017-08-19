@@ -38,4 +38,21 @@
     Solver.move.right = Solver.move.bind(Solver, 39);
     Solver.move.down = Solver.move.bind(Solver, 40);
 
+    Solver.readTile = function (x, y) {
+        var cls = ".tile-position-" + x + "-" + y;
+        var tile = document.querySelector(cls + ".tile-merged");
+        if (!tile) {
+            tile = document.querySelector(cls);
+        }
+        return tile ? parseInt(tile.querySelector(".tile-inner").innerHTML, 10) : 0;
+    };
+
+    Solver.readBoard = function () {
+        var tiles = [];
+        for (var i = 0; i < 16; ++i) {
+            tiles[i] = Solver.readTile(i % 4 + 1, Math.floor(i / 4 + 1));
+        }
+        return tiles;
+    };
+
 })();
