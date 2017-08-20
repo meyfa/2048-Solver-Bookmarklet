@@ -153,6 +153,17 @@ describe("Solver", function () {
             ]);
         });
 
+        it("should return whether the board changed", function () {
+            var board = [
+                0, 0, 0, 2,
+                0, 0, 0, 2,
+                0, 0, 0, 2,
+                0, 0, 0, 2,
+            ];
+            expect(Solver.transform(board, Solver.LEFT)).to.equal(true);
+            expect(Solver.transform(board, Solver.LEFT)).to.equal(false);
+        });
+
     });
 
 });

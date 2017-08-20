@@ -94,7 +94,7 @@
     };
 
     Solver.transform = function (board, dir) {
-        var merged = {};
+        var merged = {}, changed = false;
         Solver.getIterationOrder(dir).forEach(function (i) {
             while (board[i] !== 0) {
                 var j = Solver.getNewPosition(i, dir);
@@ -102,15 +102,18 @@
                     board[j] = board[i];
                     board[i] = 0;
                     i = j;
+                    changed = true;
                     continue;
                 } else if (j !== i && !merged[j] && board[j] === board[i]) {
                     board[j] *= 2;
                     board[i] = 0;
                     merged[j] = true;
+                    changed = true;
                 }
                 break;
             }
         });
+        return changed;
     };
 
 })();
