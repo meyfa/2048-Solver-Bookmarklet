@@ -39,7 +39,7 @@
     Solver.move.down = Solver.move.bind(Solver, 40);
 
     Solver.readTile = function (x, y) {
-        var cls = ".tile-position-" + x + "-" + y;
+        var cls = ".tile-position-" + (x + 1) + "-" + (y + 1);
         var tile = document.querySelector(cls + ".tile-merged");
         if (!tile) {
             tile = document.querySelector(cls);
@@ -50,7 +50,7 @@
     Solver.readBoard = function () {
         var tiles = [];
         for (var i = 0; i < 16; ++i) {
-            tiles[i] = Solver.readTile(i % 4 + 1, Math.floor(i / 4 + 1));
+            tiles[i] = Solver.readTile(i % 4, Math.floor(i / 4));
         }
         return tiles;
     };
