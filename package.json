@@ -2,7 +2,7 @@
   "name": "2048-solver-bookmarklet",
   "version": "1.0.0",
   "description": "JavaScript bookmarklet that solves the original 2048 game.",
-  "main": "index.js",
+  "main": "src/bookmarklet.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/meyfa/2048-Solver-Bookmarklet.git"
@@ -14,8 +14,10 @@
   },
   "homepage": "https://github.com/meyfa/2048-Solver-Bookmarklet",
   "devDependencies": {
+    "chai": "^4.1.1",
     "gulp": "^3.9.1",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^3.0.0"
+    "gulp-uglify": "^3.0.0",
+    "mocha": "^3.5.0"
   }
 }
