@@ -22,7 +22,7 @@ describe("Solver", function () {
         expect(window.Solver).to.be.an("object");
     });
 
-    describe("#move", function () {
+    describe("#move()", function () {
 
         it("should fire keydown", function (done) {
             window.addEventListener("keydown", function cb(event) {
@@ -35,7 +35,7 @@ describe("Solver", function () {
 
     });
 
-    describe("#readTile", function () {
+    describe("#readTile()", function () {
 
         before(function () {
             document.querySelector(".tile-container").innerHTML = sampleBoard;
@@ -59,7 +59,7 @@ describe("Solver", function () {
 
     });
 
-    describe("#readBoard", function () {
+    describe("#readBoard()", function () {
 
         before(function () {
             document.querySelector(".tile-container").innerHTML = sampleBoard;
