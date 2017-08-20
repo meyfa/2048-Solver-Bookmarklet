@@ -8,6 +8,11 @@
 
     var Solver = window.Solver = {};
 
+    Solver.LEFT = 37;
+    Solver.UP = 38;
+    Solver.RIGHT = 39;
+    Solver.DOWN = 40;
+
     function fireKeyboardEvent(type, code) {
         var evt = document.createEvent("KeyboardEvent");
         if (evt.initKeyEvent) {
@@ -33,10 +38,10 @@
         fireKeyboardEvent("keydown", dir);
         fireKeyboardEvent("keyup", dir);
     };
-    Solver.move.left = Solver.move.bind(Solver, 37);
-    Solver.move.up = Solver.move.bind(Solver, 38);
-    Solver.move.right = Solver.move.bind(Solver, 39);
-    Solver.move.down = Solver.move.bind(Solver, 40);
+    Solver.move.left = Solver.move.bind(Solver, Solver.LEFT);
+    Solver.move.up = Solver.move.bind(Solver, Solver.UP);
+    Solver.move.right = Solver.move.bind(Solver, Solver.RIGHT);
+    Solver.move.down = Solver.move.bind(Solver, Solver.DOWN);
 
     Solver.readTile = function (x, y) {
         var cls = ".tile-position-" + (x + 1) + "-" + (y + 1);
