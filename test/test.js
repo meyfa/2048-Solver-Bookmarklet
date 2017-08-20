@@ -6,6 +6,18 @@ describe("Solver", function () {
 
     "use strict";
 
+    var sampleBoard = [
+        '<div class="tile tile-2 tile-position-2-3">',
+        '    <div class="tile-inner">2</div>',
+        '</div>',
+        '<div class="tile tile-8 tile-position-3-4">',
+        '    <div class="tile-inner">8</div>',
+        '</div>',
+        '<div class="tile tile-16 tile-position-3-4 tile-merged">',
+        '    <div class="tile-inner">16</div>',
+        '</div>',
+    ].join("");
+
     it("should be available globally", function () {
         expect(window.Solver).to.be.an("object");
     });
@@ -26,18 +38,7 @@ describe("Solver", function () {
     describe("#readTile", function () {
 
         before(function () {
-            var c = document.querySelector(".tile-container");
-            c.innerHTML = [
-                '<div class="tile tile-2 tile-position-2-3">',
-                '    <div class="tile-inner">2</div>',
-                '</div>',
-                '<div class="tile tile-8 tile-position-3-4">',
-                '    <div class="tile-inner">8</div>',
-                '</div>',
-                '<div class="tile tile-16 tile-position-3-4 tile-merged">',
-                '    <div class="tile-inner">16</div>',
-                '</div>',
-            ].join("");
+            document.querySelector(".tile-container").innerHTML = sampleBoard;
         });
 
         after(function () {
@@ -54,6 +55,31 @@ describe("Solver", function () {
 
         it("should return 0 for empty tiles", function () {
             expect(Solver.readTile(1, 1)).to.equal(0);
+        });
+
+    });
+
+    describe("#readBoard", function () {
+
+        before(function () {
+            document.querySelector(".tile-container").innerHTML = sampleBoard;
+        });
+
+        after(function () {
+            document.querySelector(".tile-container").innerHTML = "";
+        });
+
+        it("should return an array", function () {
+            expect(Solver.readBoard()).to.be.an("array");
+        });
+
+        it("should detect all tiles correctly", function () {
+            expect(Solver.readBoard()).to.deep.equal([
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 2, 0, 0,
+                0, 0, 16, 0,
+            ]);
         });
 
     });
