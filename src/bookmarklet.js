@@ -116,4 +116,32 @@
         return changed;
     };
 
+    Solver.heuristics = {};
+
+    Solver.heuristics.emptyTiles = function (board) {
+        return board.reduce(function (n, val) {
+            return n + (val === 0);
+        }, 0);
+    };
+
+    Solver.heuristics.largeTilesInCorners = function (board) {
+        var score = 0;
+        var max = Math.max.apply(null, board);
+        for (var i = 0; i < board.length; ++i) {
+            var x = i % 4, y = Math.floor(i / 4);
+            var scale = board[i] / max;
+            var d = (x === 0 || x === 3 ? 0 : 1) + (y === 0 || y === 3 ? 0 : 1);
+            score -= scale * d;
+        }
+        return score * 2;
+    };
+
+    Solver.calculateScore = function (board) {
+        var score = 0;
+        Object.keys(Solver.heuristics).forEach(function (hName) {
+            score += Solver.heuristics[hName](board);
+        });
+        return score;
+    };
+
 })();

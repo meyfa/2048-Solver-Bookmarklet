@@ -166,4 +166,76 @@ describe("Solver", function () {
 
     });
 
+    describe("#heuristics", function () {
+
+        describe("#emptyTiles()", function () {
+
+            it("should value empty boards more", function () {
+                var board = [
+                    2, 2, 2, 2,
+                    2, 2, 2, 2,
+                    2, 2, 2, 2,
+                    2, 2, 2, 2,
+                ];
+                var score = Solver.heuristics.emptyTiles(board);
+                for (var i = 0; i < board.length; ++i) {
+                    board[i] = 0;
+                    var newScore = Solver.heuristics.emptyTiles(board);
+                    expect(newScore).to.be.above(score);
+                    score = newScore;
+                }
+            });
+
+        });
+
+        describe("#largeTilesInCorners()", function () {
+
+            it("should prefer large numbers near corners", function () {
+                var score1 = Solver.heuristics.largeTilesInCorners([
+                    0, 0, 0, 0,
+                    0, 128, 128, 0,
+                    0, 128, 128, 0,
+                    0, 0, 0, 0,
+                ]);
+                var score2 = Solver.heuristics.largeTilesInCorners([
+                    0, 0, 0, 0,
+                    128, 0, 128, 0,
+                    0, 128, 128, 0,
+                    0, 0, 0, 0,
+                ]);
+                var score3 = Solver.heuristics.largeTilesInCorners([
+                    128, 0, 0, 0,
+                    0, 0, 128, 0,
+                    0, 128, 128, 0,
+                    0, 0, 0, 0,
+                ]);
+                expect(score2).to.be.above(score1);
+                expect(score3).to.be.above(score2);
+            });
+
+        });
+
+    });
+
+    describe("#calculateScore()", function () {
+
+        it("sums up all heuristics", function () {
+            Solver.heuristics = {
+                a: function () {
+                    return 32;
+                },
+                b: function () {
+                    return -4;
+                },
+            };
+            expect(Solver.calculateScore([
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+            ])).to.equal(32 - 4);
+        });
+
+    });
+
 });
