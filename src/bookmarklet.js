@@ -144,4 +144,29 @@
         return score;
     };
 
+    Solver.pickDirection = function (board, levels) {
+        var result = { direction: Solver.LEFT, score: -Infinity };
+        Solver.DIRECTIONS.forEach(function (dir) {
+            var b = board.slice();
+            var changed = Solver.transform(b, dir);
+            if (!changed) {
+                return;
+            }
+            var score = Solver.calculateScore(b);
+            if (levels > 0) {
+                score += Solver.pickDirection(b, levels - 1).score * 0.5;
+            }
+            if (score > result.score) {
+                result.direction = dir;
+                result.score = score;
+            }
+        });
+        return result;
+    };
+
+    Solver.next = function () {
+        var result = Solver.pickDirection(Solver.readBoard(), 6);
+        Solver.move(result.direction);
+    };
+
 })();

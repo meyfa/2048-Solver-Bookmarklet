@@ -238,4 +238,59 @@ describe("Solver", function () {
 
     });
 
+    describe("#pickDirection()", function () {
+
+        it("returns an object with direction and score", function () {
+            var result = Solver.pickDirection([
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+            ], 1);
+            expect(result).to.be.an("object");
+            expect(result.direction).to.be.oneOf(Solver.DIRECTIONS);
+            expect(result.score).to.be.a("number");
+        });
+
+        it("does not modify the input", function () {
+            var board1 = [
+                2, 2, 4, 4,
+                0, 0, 0, 0,
+                0, 0, 4, 0,
+                0, 0, 0, 0,
+            ];
+            var board2 = board1.slice();
+            Solver.pickDirection(board2);
+            expect(board2).to.deep.equal(board1);
+        });
+
+        it("accepts a recursion level", function () {
+            var board = [
+                2, 2, 4, 4,
+                0, 0, 0, 0,
+                0, 0, 4, 0,
+                0, 0, 0, 0,
+            ];
+            var score = 0;
+            for (var i = 1; i <= 5; ++i) {
+                var newScore = Solver.pickDirection(board, i);
+                expect(newScore).to.not.equal(score);
+                score = newScore;
+            }
+        });
+
+    });
+
+    describe("#next()", function () {
+
+        it("should perform a move", function (done) {
+            Solver.move = function (dir) {
+                expect(dir).to.be.oneOf(Solver.DIRECTIONS);
+                done();
+            };
+            Solver.next();
+        });
+
+    });
+
 });
