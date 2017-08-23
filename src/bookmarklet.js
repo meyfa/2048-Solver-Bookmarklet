@@ -17,6 +17,41 @@
         Solver.LEFT, Solver.UP, Solver.RIGHT, Solver.DOWN,
     ];
 
+    Solver.initUI = function () {
+        if (document.getElementById("solver-bookmarklet-ui")) {
+            return;
+        }
+        var ui = document.createElement("p");
+        ui.id = "solver-bookmarklet-ui";
+        ui.style.marginTop = '30px';
+        var buttonStyle = [
+            '-webkit-appearance: none',
+            '-moz-appearance: none',
+            'appearance: none',
+            'border: none',
+            'font: inherit',
+            'display: inline-block',
+            'background: #8f7a66',
+            'border-radius: 3px',
+            'margin: 0 8px',
+            'padding: 0 20px',
+            'text-decoration: none',
+            'color: #f9f6f2',
+            'height: 40px',
+            'line-height: 42px',
+            'cursor: pointer',
+            'font-weight: bold',
+        ].join("; ");
+        ui.innerHTML = [
+            '<hr />',
+            'Solver by <a href="http://meyfa.net">Fabian Meyer</a>',
+            '<button onclick="Solver.start()" style="' + buttonStyle + '">Start</button>',
+            '<button onclick="Solver.stop()" style="' + buttonStyle + '">Stop</button>',
+        ].join("");
+        var c = document.querySelector(".game-container");
+        c.parentNode.insertBefore(ui, c);
+    };
+
     function fireKeyboardEvent(type, code) {
         var evt = document.createEvent("KeyboardEvent");
         if (evt.initKeyEvent) {
@@ -167,6 +202,19 @@
     Solver.next = function () {
         var result = Solver.pickDirection(Solver.readBoard(), 6);
         Solver.move(result.direction);
+    };
+
+    var intval = null;
+
+    Solver.start = function () {
+        if (!intval) {
+            intval = window.setInterval(Solver.next, 100);
+        }
+    };
+
+    Solver.stop = function () {
+        window.clearInterval(intval);
+        intval = null;
     };
 
 })();

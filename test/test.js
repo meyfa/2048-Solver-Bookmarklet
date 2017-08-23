@@ -22,6 +22,33 @@ describe("Solver", function () {
         expect(window.Solver).to.be.an("object");
     });
 
+    describe("#initUI()", function () {
+
+        afterEach(function () {
+            var e = document.getElementById("solver-bookmarklet-ui");
+            e.parentNode.removeChild(e);
+        });
+
+        it("should add start and stop buttons", function () {
+            Solver.initUI();
+            var buttons = document.querySelectorAll("#solver-bookmarklet-ui > button");
+            expect(buttons).to.have.lengthOf(2);
+            expect(buttons[0].getAttribute("onclick")).to.equal("Solver.start()");
+            expect(buttons[1].getAttribute("onclick")).to.equal("Solver.stop()");
+        });
+
+        it("should not run multiple times", function () {
+            // run first time
+            Solver.initUI();
+            var e1 = document.querySelectorAll("#solver-bookmarklet-ui");
+            // run second time
+            Solver.initUI();
+            var e2 = document.querySelectorAll("#solver-bookmarklet-ui");
+            expect(e2).to.deep.equal(e1);
+        });
+
+    });
+
     describe("#move()", function () {
 
         it("should fire keydown", function (done) {
