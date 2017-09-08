@@ -56,10 +56,10 @@
         var evt = document.createEvent("KeyboardEvent");
         if (evt.initKeyEvent) {
             evt.initKeyEvent(type, true, true, document.defaultView,
-                    false, false, false, false, code, code);
+                false, false, false, false, code, code);
         } else if (evt.initKeyboardEvent) {
             evt.initKeyboardEvent(type, true, true, document.defaultView,
-                    code, code, false, false, false, false, false);
+                code, code, false, false, false, false, false);
         }
         Object.defineProperty(evt, "keyCode", {
             get: function() {
