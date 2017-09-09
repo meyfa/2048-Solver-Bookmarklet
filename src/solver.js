@@ -126,7 +126,7 @@
     };
 
     Solver.getLookupIndex = function (a, b, c, d) {
-        return ((a * 16 + b) * 16 + c) * 16 + d;
+        return 4096 * a + 256 * b + 16 * c + d;
     };
 
     Solver.initLookup = function () {
