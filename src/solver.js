@@ -131,21 +131,16 @@
 
     Solver.initLookup = function () {
         Solver.lineLookup = [];
-        var values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-        values.forEach(function (a) {
-            values.forEach(function (b) {
-                values.forEach(function (c) {
-                    values.forEach(function (d) {
-                        var line = [a, b, c, d];
-                        Solver.transformLineLeft(line);
-                        if (line[0] !== a || line[1] !== b || line[2] !== c || line[3] !== d) {
-                            var index = Solver.getLookupIndex(a, b, c, d);
-                            Solver.lineLookup[index] = line;
-                        }
-                    });
-                });
-            });
-        });
+        for (var i = 0; i < (1 << 16); ++i) {
+            var a = (i >> 12) & 0xF, b = (i >> 8) & 0xF,
+                c = (i >> 4) & 0xF, d = i & 0xF;
+            var line = [a, b, c, d];
+            Solver.transformLineLeft(line);
+            if (line[0] !== a || line[1] !== b || line[2] !== c || line[3] !== d) {
+                var index = Solver.getLookupIndex(a, b, c, d);
+                Solver.lineLookup[index] = line;
+            }
+        }
     };
 
     Solver.getTransformOrder = function (dir) {
