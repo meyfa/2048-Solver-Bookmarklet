@@ -17,6 +17,10 @@
         Solver.LEFT, Solver.UP, Solver.RIGHT, Solver.DOWN,
     ];
 
+    Solver.init = function () {
+        Solver.initUI();
+    };
+
     Solver.initUI = function () {
         if (document.getElementById("solver-bookmarklet-ui")) {
             return;
