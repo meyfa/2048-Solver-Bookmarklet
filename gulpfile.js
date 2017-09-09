@@ -6,7 +6,11 @@ gulp.task("loader", function () {
     "use strict";
     return gulp.src("src/loader.js")
         .pipe(rename("loader.min.js"))
-        .pipe(uglify())
+        .pipe(uglify({
+            compress: {
+                "negate_iife": false,
+            },
+        }))
         .pipe(gulp.dest("target"));
 });
 
