@@ -19,6 +19,7 @@
 
     Solver.init = function () {
         Solver.initUI();
+        Solver.initLookup();
     };
 
     Solver.initUI = function () {
@@ -86,10 +87,13 @@
     Solver.readTile = function (x, y) {
         var cls = ".tile-position-" + (x + 1) + "-" + (y + 1);
         var tile = document.querySelector(cls + ".tile-merged");
-        if (!tile) {
-            tile = document.querySelector(cls);
+        if (!tile && !(tile = document.querySelector(cls))) {
+            return 0;
         }
-        return tile ? parseInt(tile.querySelector(".tile-inner").innerHTML, 10) : 0;
+        var table = { 0: 0, 2: 1, 4: 2, 8: 3, 16: 4, 32: 5, 64: 6, 128: 7,
+            256: 8, 512: 9, 1024: 10, 2048: 11, 4096: 12, 8192: 13, 16384: 14,
+            32768: 15 };
+        return table[parseInt(tile.querySelector(".tile-inner").innerHTML, 10)];
     };
 
     Solver.readBoard = function () {
@@ -100,86 +104,89 @@
         return tiles;
     };
 
-    Solver.getIterationOrder = function (dir) {
-        switch (dir) {
-            case Solver.LEFT:
-                return [1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15];
-            case Solver.RIGHT:
-                return [2, 1, 0, 6, 5, 4, 10, 9, 8, 14, 13, 12];
-            case Solver.UP:
-                return [4, 8, 12, 5, 9, 13, 6, 10, 14, 7, 11, 15];
-            case Solver.DOWN:
-                return [8, 4, 0, 9, 5, 1, 10, 6, 2, 11, 7, 3];
-        }
-    };
-
-    Solver.getNewPosition = function (i, dir) {
-        var x = i % 4, y = Math.floor(i / 4);
-        switch (dir) {
-            case Solver.LEFT:
-                x = Math.max(x - 1, 0);
-                break;
-            case Solver.RIGHT:
-                x = Math.min(x + 1, 3);
-                break;
-            case Solver.UP:
-                y = Math.max(y - 1, 0);
-                break;
-            case Solver.DOWN:
-                y = Math.min(y + 1, 3);
-                break;
-        }
-        return y * 4 + x;
-    };
-
-    Solver.transform = function (board, dir) {
-        var merged = {}, changed = false;
-        Solver.getIterationOrder(dir).forEach(function (i) {
-            while (board[i] !== 0) {
-                var j = Solver.getNewPosition(i, dir);
-                if (board[j] === 0) {
-                    board[j] = board[i];
-                    board[i] = 0;
-                    i = j;
-                    changed = true;
+    Solver.transformLineLeft = function (line) {
+        var merged = [];
+        for (var i = 1; i < 4; ++i) {
+            var pos = i;
+            while (line[pos] !== 0 && pos > 0) {
+                if (line[pos - 1] === 0) {
+                    line[pos - 1] = line[pos];
+                    line[pos] = 0;
+                    --pos;
                     continue;
-                } else if (j !== i && !merged[j] && board[j] === board[i]) {
-                    board[j] *= 2;
-                    board[i] = 0;
-                    merged[j] = true;
-                    changed = true;
+                }
+                if (!merged[pos - 1] && line[pos - 1] === line[pos]) {
+                    ++line[pos - 1];
+                    line[pos] = 0;
+                    merged[pos - 1] = true;
                 }
                 break;
             }
+        }
+    };
+
+    Solver.getLookupIndex = function (a, b, c, d) {
+        return ((a * 16 + b) * 16 + c) * 16 + d;
+    };
+
+    Solver.initLookup = function () {
+        Solver.lineLookup = [];
+        var values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        values.forEach(function (a) {
+            values.forEach(function (b) {
+                values.forEach(function (c) {
+                    values.forEach(function (d) {
+                        var line = [a, b, c, d];
+                        Solver.transformLineLeft(line);
+                        if (line[0] !== a || line[1] !== b || line[2] !== c || line[3] !== d) {
+                            var index = Solver.getLookupIndex(a, b, c, d);
+                            Solver.lineLookup[index] = line;
+                        }
+                    });
+                });
+            });
         });
+    };
+
+    Solver.getTransformOrder = function (dir) {
+        switch (dir) {
+            case Solver.LEFT:
+                return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+            case Solver.RIGHT:
+                return [3, 2, 1, 0, 7, 6, 5, 4, 11, 10, 9, 8, 15, 14, 13, 12];
+            case Solver.UP:
+                return [0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15];
+            case Solver.DOWN:
+                return [12, 8, 4, 0, 13, 9, 5, 1, 14, 10, 6, 2, 15, 11, 7, 3];
+        }
+    };
+
+    Solver.transform = function (board, dir) {
+        var changed = false, src, dst;
+        var order = Solver.getTransformOrder(dir);
+        for (var i = 0; i < 16; i += 4) {
+            src = Solver.getLookupIndex(board[order[i]], board[order[i + 1]],
+                board[order[i + 2]], board[order[i + 3]]);
+            dst = Solver.lineLookup[src];
+            if (dst) {
+                changed = true;
+                board[order[i]] = dst[0];
+                board[order[i + 1]] = dst[1];
+                board[order[i + 2]] = dst[2];
+                board[order[i + 3]] = dst[3];
+            }
+        }
         return changed;
     };
 
-    Solver.heuristics = {};
-
-    Solver.heuristics.emptyTiles = function (board) {
-        return board.reduce(function (n, val) {
-            return n + (val === 0);
-        }, 0);
-    };
-
-    Solver.heuristics.largeTilesInCorners = function (board) {
+    Solver.calculateScore = function (board) {
+        var distances = [0, 1, 1, 0, 1, 2, 2, 1, 1, 2, 2, 1, 0, 1, 1, 0];
         var score = 0;
         var max = Math.max.apply(null, board);
         for (var i = 0; i < board.length; ++i) {
-            var x = i % 4, y = Math.floor(i / 4);
             var scale = board[i] / max;
-            var d = (x === 0 || x === 3 ? 0 : 1) + (y === 0 || y === 3 ? 0 : 1);
-            score -= scale * d;
+            score = score + (board[i] === 0 ? 1 : 0) - scale * distances[i];
         }
-        return score * 2;
-    };
-
-    Solver.calculateScore = function (board) {
-        var score = 0;
-        Object.keys(Solver.heuristics).forEach(function (hName) {
-            score += Solver.heuristics[hName](board);
-        });
         return score;
     };
 

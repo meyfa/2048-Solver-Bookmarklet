@@ -73,11 +73,11 @@ describe("Solver", function () {
         });
 
         it("should detect regular tiles", function () {
-            expect(Solver.readTile(1, 2)).to.equal(2);
+            expect(Solver.readTile(1, 2)).to.equal(1);
         });
 
         it("should detect merged tiles", function () {
-            expect(Solver.readTile(2, 3)).to.equal(16);
+            expect(Solver.readTile(2, 3)).to.equal(4);
         });
 
         it("should return 0 for empty tiles", function () {
@@ -104,77 +104,129 @@ describe("Solver", function () {
             expect(Solver.readBoard()).to.deep.equal([
                 0, 0, 0, 0,
                 0, 0, 0, 0,
-                0, 2, 0, 0,
-                0, 0, 16, 0,
+                0, 1, 0, 0,
+                0, 0, 4, 0,
             ]);
         });
 
     });
 
-    describe("#getIterationOrder()", function () {
+    describe("#transformLineLeft()", function () {
+
+        it("should move the tiles", function () {
+            var line = [0, 3, 0, 0];
+            Solver.transformLineLeft(line);
+            expect(line).to.deep.equal([3, 0, 0, 0]);
+        });
+
+        it("should merge tiles correctly", function () {
+            var line = [0, 3, 3, 3];
+            Solver.transformLineLeft(line);
+            expect(line).to.deep.equal([4, 3, 0, 0]);
+        });
+
+    });
+
+    describe("#getLookupIndex()", function () {
+
+        it("should return unique indices 0 to 65535", function () {
+            var values = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+            var seen = [];
+            values.forEach(function (a) {
+                values.forEach(function (b) {
+                    values.forEach(function (c) {
+                        values.forEach(function (d) {
+                            var value = Solver.getLookupIndex(a, b, c, d);
+                            if (seen[value]) {
+                                throw new Error("value seen twice");
+                            }
+                            if (value < 0) {
+                                throw new Error("value less than 0");
+                            }
+                            if (value > 65535) {
+                                throw new Error("value bigger than 65535");
+                            }
+                            seen[value] = true;
+                        });
+                    });
+                });
+            });
+        });
+
+    });
+
+    describe("#initLookup()", function () {
+
+        before(function () {
+            Solver.initLookup();
+        });
+
+        after(function () {
+            delete Solver.lineLookup;
+        });
+
+        it("should init Solver.lineLookup", function () {
+            expect(Solver).to.have.property("lineLookup");
+            expect(Solver.lineLookup).to.be.an("array");
+        });
+
+        it("should assign transformed lines", function () {
+            var index = Solver.getLookupIndex(0, 0, 1, 0);
+            expect(Solver.lineLookup[index]).to.deep.equal([1, 0, 0, 0]);
+        });
+
+        it("should not assign unchanged lines", function () {
+            var index = Solver.getLookupIndex(3, 2, 1, 0);
+            expect(Solver.lineLookup[index]).to.equal(undefined);
+        });
+
+    });
+
+    describe("#getTransformOrder()", function () {
 
         it("should return an array", function () {
-            expect(Solver.getIterationOrder(Solver.DOWN)).to.be.an("array");
-        });
-
-        it("should not contain edge tiles", function () {
-            expect(Solver.getIterationOrder(Solver.UP)).to.not.have.members([
-                0, 1, 2, 3,
-            ]);
-        });
-
-    });
-
-    describe("#getNewPosition()", function () {
-
-        it("should return modified indices", function () {
-            expect(Solver.getNewPosition(5, Solver.LEFT)).to.equal(4);
-            expect(Solver.getNewPosition(5, Solver.RIGHT)).to.equal(6);
-            expect(Solver.getNewPosition(5, Solver.UP)).to.equal(1);
-            expect(Solver.getNewPosition(5, Solver.DOWN)).to.equal(9);
-        });
-
-        it("should limit x to 0 .. 3 inclusive", function () {
-            expect(Solver.getNewPosition(4, Solver.LEFT)).to.equal(4);
-            expect(Solver.getNewPosition(7, Solver.RIGHT)).to.equal(7);
-        });
-
-        it("should limit y to 0 .. 3 inclusive", function () {
-            expect(Solver.getNewPosition(1, Solver.UP)).to.equal(1);
-            expect(Solver.getNewPosition(13, Solver.DOWN)).to.equal(13);
+            expect(Solver.getTransformOrder(Solver.DOWN)).to.be.an("array");
         });
 
     });
 
     describe("#transform()", function () {
 
+        before(function () {
+            Solver.initLookup();
+        });
+
+        after(function () {
+            delete Solver.lineLookup;
+        });
+
         it("should move the tiles", function () {
             var board = [
-                0, 0, 0, 2,
+                0, 0, 0, 1,
                 0, 0, 2, 0,
-                0, 2, 0, 0,
-                2, 0, 0, 0,
+                0, 3, 0, 0,
+                4, 0, 0, 0,
             ];
             Solver.transform(board, Solver.LEFT);
             expect(board).to.deep.equal([
+                1, 0, 0, 0,
                 2, 0, 0, 0,
-                2, 0, 0, 0,
-                2, 0, 0, 0,
-                2, 0, 0, 0,
+                3, 0, 0, 0,
+                4, 0, 0, 0,
             ]);
         });
 
         it("should merge tiles correctly", function () {
             var board = [
-                0, 2, 2, 2,
-                2, 2, 0, 0,
-                0, 2, 2, 4,
+                0, 5, 5, 5,
+                4, 4, 0, 0,
+                0, 3, 3, 4,
                 2, 0, 0, 0,
             ];
             Solver.transform(board, Solver.RIGHT);
             expect(board).to.deep.equal([
-                0, 0, 2, 4,
-                0, 0, 0, 4,
+                0, 0, 5, 6,
+                0, 0, 0, 5,
                 0, 0, 4, 4,
                 0, 0, 0, 2,
             ]);
@@ -182,97 +234,78 @@ describe("Solver", function () {
 
         it("should return whether the board changed", function () {
             var board = [
-                0, 0, 0, 2,
-                0, 0, 0, 2,
-                0, 0, 0, 2,
-                0, 0, 0, 2,
+                2, 2, 2, 2,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
             ];
-            expect(Solver.transform(board, Solver.LEFT)).to.equal(true);
-            expect(Solver.transform(board, Solver.LEFT)).to.equal(false);
-        });
-
-    });
-
-    describe("#heuristics", function () {
-
-        describe("#emptyTiles()", function () {
-
-            it("should value empty boards more", function () {
-                var board = [
-                    2, 2, 2, 2,
-                    2, 2, 2, 2,
-                    2, 2, 2, 2,
-                    2, 2, 2, 2,
-                ];
-                var score = Solver.heuristics.emptyTiles(board);
-                for (var i = 0; i < board.length; ++i) {
-                    board[i] = 0;
-                    var newScore = Solver.heuristics.emptyTiles(board);
-                    expect(newScore).to.be.above(score);
-                    score = newScore;
-                }
-            });
-
-        });
-
-        describe("#largeTilesInCorners()", function () {
-
-            it("should prefer large numbers near corners", function () {
-                var score1 = Solver.heuristics.largeTilesInCorners([
-                    0, 0, 0, 0,
-                    0, 128, 128, 0,
-                    0, 128, 128, 0,
-                    0, 0, 0, 0,
-                ]);
-                var score2 = Solver.heuristics.largeTilesInCorners([
-                    0, 0, 0, 0,
-                    128, 0, 128, 0,
-                    0, 128, 128, 0,
-                    0, 0, 0, 0,
-                ]);
-                var score3 = Solver.heuristics.largeTilesInCorners([
-                    128, 0, 0, 0,
-                    0, 0, 128, 0,
-                    0, 128, 128, 0,
-                    0, 0, 0, 0,
-                ]);
-                expect(score2).to.be.above(score1);
-                expect(score3).to.be.above(score2);
-            });
-
+            expect(Solver.transform(board, Solver.DOWN)).to.equal(true);
+            expect(Solver.transform(board, Solver.DOWN)).to.equal(false);
         });
 
     });
 
     describe("#calculateScore()", function () {
 
-        it("sums up all heuristics", function () {
-            Solver.heuristics = {
-                a: function () {
-                    return 32;
-                },
-                b: function () {
-                    return -4;
-                },
-            };
-            expect(Solver.calculateScore([
+        it("should value empty boards more", function () {
+            var board = [
+                2, 2, 2, 2,
+                2, 2, 2, 2,
+                2, 2, 2, 2,
+                2, 2, 2, 2,
+            ];
+            var score = Solver.calculateScore(board);
+            // note that board will never be completely empty
+            // so we only go down to length - 1 empty tiles
+            for (var i = 0; i < board.length - 1; ++i) {
+                board[i] = 0;
+                var newScore = Solver.calculateScore(board);
+                expect(newScore).to.be.above(score);
+                score = newScore;
+            }
+        });
+
+        it("should prefer large numbers near corners", function () {
+            var score1 = Solver.calculateScore([
                 0, 0, 0, 0,
+                0, 7, 7, 0,
+                0, 7, 7, 0,
                 0, 0, 0, 0,
+            ]);
+            var score2 = Solver.calculateScore([
                 0, 0, 0, 0,
+                7, 0, 7, 0,
+                0, 7, 7, 0,
                 0, 0, 0, 0,
-            ])).to.equal(32 - 4);
+            ]);
+            var score3 = Solver.calculateScore([
+                7, 0, 0, 0,
+                0, 0, 7, 0,
+                0, 7, 7, 0,
+                0, 0, 0, 0,
+            ]);
+            expect(score2).to.be.above(score1);
+            expect(score3).to.be.above(score2);
         });
 
     });
 
     describe("#pickDirection()", function () {
 
+        before(function () {
+            Solver.initLookup();
+        });
+
+        after(function () {
+            delete Solver.lineLookup;
+        });
+
         it("returns an object with direction and score", function () {
             var result = Solver.pickDirection([
                 0, 0, 0, 0,
+                0, 1, 0, 0,
                 0, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 0, 0, 0,
+                0, 0, 3, 0,
             ], 1);
             expect(result).to.be.an("object");
             expect(result.direction).to.be.oneOf(Solver.DIRECTIONS);
@@ -293,10 +326,10 @@ describe("Solver", function () {
 
         it("accepts a recursion level", function () {
             var board = [
-                2, 2, 4, 4,
+                2, 2, 3, 3,
                 0, 0, 0, 0,
-                0, 0, 4, 0,
-                0, 0, 0, 0,
+                0, 1, 3, 0,
+                0, 1, 0, 0,
             ];
             var score = 0;
             for (var i = 1; i <= 5; ++i) {
@@ -309,6 +342,14 @@ describe("Solver", function () {
     });
 
     describe("#next()", function () {
+
+        before(function () {
+            Solver.initLookup();
+        });
+
+        after(function () {
+            delete Solver.lineLookup;
+        });
 
         it("should perform a move", function (done) {
             Solver.move = function (dir) {
