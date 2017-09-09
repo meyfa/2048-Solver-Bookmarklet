@@ -182,6 +182,21 @@
             var scale = board[i] / max;
             score = score + (board[i] === 0 ? 1 : 0) - scale * distances[i];
         }
+        // monotonicity
+        function isMonotone(a, b, c, d) {
+            return (a <= b && b <= c && c <= d) || (a >= b && b >= c && c >= d);
+        }
+        var mono = 0;
+        for (var o = 0; o < 4; ++o) {
+            if (isMonotone(board[o], board[o + 4], board[o + 8], board[o + 12])) {
+                ++mono;
+            }
+            var y = o * 4;
+            if (isMonotone(board[y], board[y + 1], board[y + 2], board[y + 3])) {
+                ++mono;
+            }
+        }
+        score += mono / 4;
         return score;
     };
 
