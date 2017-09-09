@@ -288,6 +288,29 @@ describe("Solver", function () {
             expect(score3).to.be.above(score2);
         });
 
+        it("should prefer monotone boards", function () {
+            var score1 = Solver.calculateScore([
+                3, 1, 2, 0,
+                0, 2, 1, 3,
+                3, 1, 2, 0,
+                0, 2, 1, 3,
+            ]);
+            var score2 = Solver.calculateScore([
+                0, 1, 2, 3,
+                3, 2, 1, 0,
+                0, 1, 2, 3,
+                3, 2, 1, 0,
+            ]);
+            var score3 = Solver.calculateScore([
+                0, 1, 2, 3,
+                0, 1, 2, 3,
+                0, 1, 2, 3,
+                0, 1, 2, 3,
+            ]);
+            expect(score2).to.be.above(score1);
+            expect(score3).to.be.above(score2);
+        });
+
     });
 
     describe("#pickDirection()", function () {
